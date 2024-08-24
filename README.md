@@ -4,7 +4,13 @@
 
 **Python**: 3.11.9 и выше
 
-**Зависимости**: FastAPI, Pydantic 2, SQLAlchemy, httpx
+**Зависимости**: 
+   - FastAPI;
+   - Pydantic 2;
+   - asyncpg;
+   - SQLAlchemy;
+   - alembic;
+   - httpx;
 
 **Краткое описание**: 
 
@@ -22,4 +28,7 @@ SpaceX ETL - сервис ...
    - Rate Limit;
    - X-Request-Id (трассировка запросов);
    - X-Forwarded-For (определение ip пользователей сервиса);
-3) ...
+3) Прикрутить интеграцию с Sentry через Middleware;
+4) Прикрутить JSON-логи (добавить кастомный хендлер для логов);
+5) Добавить трассировку через Jaeger;
+6) ...

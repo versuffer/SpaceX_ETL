@@ -1,7 +1,7 @@
 install:
 	sudo apt install pre-commit
 	pip install poetry
-	poetry install --no-root --no-interaction --with dev
+	poetry install --no-root --no-interaction --with all
 
 check:
 	isort . --check-only
