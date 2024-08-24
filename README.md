@@ -16,6 +16,9 @@
 
 SpaceX ETL - сервис ...
 
+### Схема БД
+https://dbdiagram.io/d/SpaceX-ETL-DB-Schema-66ca2b3ea346f9518cfabbf4
+
 ### Какие задачи решает сервис
 1) ...
 

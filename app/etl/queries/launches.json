@@ -1,0 +1,3 @@
+{
+  "query": "{ launches { id links { article_link flickr_images mission_patch mission_patch_small presskit reddit_campaign reddit_launch reddit_media reddit_recovery video_link wikipedia } } }"
+}

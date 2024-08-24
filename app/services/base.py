@@ -1,15 +1,10 @@
-from json import JSONDecodeError
-from typing import Any, Literal, TypeAlias, Union
+from typing import Any, Literal
 
 import backoff
 from httpx import AsyncClient, ConnectError, ConnectTimeout, ReadTimeout, Response
 from httpx._types import HeaderTypes, QueryParamTypes, URLTypes, VerifyTypes
 
 from app.settings.logs import logger
-
-StatusCode: TypeAlias = int
-JsonContent: TypeAlias = dict
-TextContent: TypeAlias = str
 
 
 class AsyncRequestService:
@@ -32,7 +27,7 @@ class AsyncRequestService:
             **extra_client_kwargs,
         )
 
-    async def make_request(
+    async def request(
         self,
         url: str = '',
         *,
@@ -40,7 +35,7 @@ class AsyncRequestService:
         params: QueryParamTypes | None = None,
         json: Any | None = None,
         **extra_kwargs,
-    ) -> tuple[StatusCode, Union[JsonContent | TextContent]]:
+    ) -> Response:
         @backoff.on_exception(
             backoff.expo,
             (ReadTimeout, ConnectTimeout, ConnectError),
@@ -48,24 +43,16 @@ class AsyncRequestService:
             logger=logger,
             raise_on_giveup=True,
         )
-        async def _make_request() -> Response:
+        async def _request() -> Response:
             async with AsyncClient(**self._client_kwargs) as client:
                 logger.debug(f'Request: {self} -> {method} -> {url or client.base_url}. ')
                 return await client.request(method, url, params=params, json=json, **extra_kwargs)
 
         try:
-            response = await _make_request()
+            return await _request()
         except (ReadTimeout, ConnectTimeout, ConnectError) as err:
-            message = 'One of services is not available.'
             logger.exception(
-                f'{message} {method=} {self._client_kwargs.get("base_url")=} '
+                f'Request {method=} {self._client_kwargs.get("base_url")=} '
                 f'{url=}, {params=}, {json=}, {extra_kwargs=}'
             )
             raise err
-
-        try:
-            content = response.json()
-        except JSONDecodeError:
-            content = response.text
-
-        return response.status_code, content

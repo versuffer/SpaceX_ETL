@@ -1,0 +1,3 @@
+{
+  "query": "{ missions { id twitter wikipedia website } }"
+}

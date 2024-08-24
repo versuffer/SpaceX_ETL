@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import HttpUrl, PostgresDsn, SecretStr, field_validator
+from pydantic import PostgresDsn, SecretStr, field_validator
 from pydantic_core.core_schema import ValidationInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     POSTGRES_DSN: PostgresDsn | str = ''
 
     # Data Source
-    DATA_SOURCE_URL: HttpUrl = 'https://spacex-production.up.railway.app/'
+    DATA_SOURCE_URL: str = 'https://spacex-production.up.railway.app/'
 
     model_config = SettingsConfigDict(env_file=BASEDIR / '.env')
 
