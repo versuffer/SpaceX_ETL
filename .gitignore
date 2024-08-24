@@ -40,4 +40,4 @@ dmypy.json
 .idea/
 
 # Additional
-/sandbox.py
+*sandbox.py
