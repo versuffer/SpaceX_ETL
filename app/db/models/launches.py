@@ -1,5 +1,7 @@
-from sqlalchemy import ARRAY, TEXT
-from sqlalchemy.orm import Mapped, mapped_column
+from uuid import UUID
+
+from sqlalchemy import ARRAY, TEXT, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base, text
 
@@ -23,3 +25,7 @@ class LaunchLinkModel(Base):
     reddit_recovery: Mapped[text] = mapped_column(nullable=True)
     video_link: Mapped[text] = mapped_column(nullable=True)
     wikipedia: Mapped[text] = mapped_column(nullable=True)
+
+    # many-to-one
+    launch_uuid: Mapped[UUID] = mapped_column(ForeignKey('launches.id', ondelete='CASCADE'), nullable=False)
+    launch: Mapped[LaunchModel] = relationship(back_populates='launch_links')
