@@ -11,6 +11,9 @@ class LaunchModel(Base):
 
     launch_id: Mapped[text] = mapped_column(nullable=False, unique=True)
 
+    # one-to-one
+    launch_link: Mapped['LaunchLinkModel'] = relationship(back_populates='launch', uselist=False)
+
 
 class LaunchLinkModel(Base):
     __tablename__ = 'launch_links'
@@ -26,6 +29,8 @@ class LaunchLinkModel(Base):
     video_link: Mapped[text] = mapped_column(nullable=True)
     wikipedia: Mapped[text] = mapped_column(nullable=True)
 
-    # many-to-one
-    launch_uuid: Mapped[UUID] = mapped_column(ForeignKey('launches.id', ondelete='CASCADE'), nullable=False)
+    # one-to-one
+    launch_uuid: Mapped[UUID] = mapped_column(
+        ForeignKey('launches.id', ondelete='CASCADE'), nullable=False, unique=True
+    )
     launch: Mapped[LaunchModel] = relationship(back_populates='launch_links')
