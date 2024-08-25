@@ -5,7 +5,7 @@ from pydantic import PostgresDsn, SecretStr, field_validator
 from pydantic_core.core_schema import ValidationInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-BASEDIR = Path(__file__).resolve().parent.parent
+BASEDIR = Path(__file__).resolve().parent.parent.parent
 
 
 class Settings(BaseSettings):

@@ -1,0 +1,23 @@
+FROM python:3.11
+
+RUN pip install --upgrade pip  \
+    && pip install "poetry==1.8.2"  \
+    && poetry config virtualenvs.create false
+
+WORKDIR /etl_scheduler
+
+COPY ["poetry.lock", "pyproject.toml", "./"]
+
+RUN poetry install --no-root --no-interaction --without dev
+
+WORKDIR /app
+
+COPY app .
+
+WORKDIR ..
+
+COPY alembic.ini .
+
+COPY migrations migrations
+
+CMD ["sh", "-c", "alembic upgrade head && python -m app.etl.scheduler"]

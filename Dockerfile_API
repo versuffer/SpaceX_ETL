@@ -1,0 +1,19 @@
+FROM python:3.11
+
+RUN pip install --upgrade pip  \
+    && pip install "poetry==1.8.2"  \
+    && poetry config virtualenvs.create false
+
+WORKDIR /etl_api
+
+COPY ["poetry.lock", "pyproject.toml", "./"]
+
+RUN poetry install --no-root --no-interaction --without dev
+
+WORKDIR /app
+
+COPY app .
+
+WORKDIR ..
+
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "-w", "1", "-k", "uvicorn.workers.UvicornWorker", "app.main:app"]
