@@ -39,4 +39,5 @@ https://dbdiagram.io/d/SpaceX-ETL-DB-Schema-66ca2b3ea346f9518cfabbf4
 8) Добавить пагинацию при для GraphQL-запросов через limit и offset;
 9) Добавить обработку ошибок с помощью кастомных исключений в ETL;
 10) Добавить unit-тесты для ETL;
-11) 
+11) Добавить .env в .gitignore;
+12) 
