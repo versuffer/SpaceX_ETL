@@ -1,5 +1,4 @@
 # SpaceX ETL
-=====================
 ### Основная информация о сервисе
 
 **Python**: 3.11.9 и выше
@@ -49,7 +48,7 @@ docker compose logs -f
 ```bash
 docker compose logs -f etl_scheduler
 ```
-4) Получить статистику по собранным данным
+3) Получить статистику по собранным данным
 ```bash
 curl -X GET http://localhost:8000/data_mart/object_url_count
 ```
