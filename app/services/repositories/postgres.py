@@ -11,6 +11,9 @@ from app.db.models.base import Base
 from app.db.models.launches import LaunchLinksModel, LaunchModel
 from app.db.models.missions import MissionModel
 from app.db.models.rockets import RocketModel
+from app.schemas.etl.launches import LaunchLinksSchema, LaunchSchema
+from app.schemas.etl.missions import MissionSchema
+from app.schemas.etl.rockets import RocketSchema
 
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -30,7 +33,7 @@ class PostgresRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType])
         id_: UUID,
         *,
         extra_options: list[_AbstractLoad] | None = None,
-        session: AsyncSession | None = None,
+        session: AsyncSession,
     ) -> ModelType | None:
         extra_options = extra_options or []
         statement = (
@@ -44,7 +47,7 @@ class PostgresRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType])
         self,
         *args_filters,
         extra_options: list[_AbstractLoad] | None = None,
-        session: AsyncSession | None = None,
+        session: AsyncSession,
         **kwargs_filters,
     ) -> ModelType | None:
         extra_options = extra_options or []
@@ -63,7 +66,7 @@ class PostgresRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType])
         skip: int | None = None,
         limit: int | None = None,
         extra_options: list[_AbstractLoad] | None = None,
-        session: AsyncSession | None = None,
+        session: AsyncSession,
         **kwargs_filters,
     ) -> Sequence[ModelType]:
         filters = list(args_filters)
@@ -83,7 +86,7 @@ class PostgresRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType])
         self,
         obj_in: CreateSchemaType,
         *,
-        session: AsyncSession | None = None,
+        session: AsyncSession,
         **extra_values,
     ) -> ModelType:
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
@@ -100,7 +103,7 @@ class PostgresRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType])
         id_: UUID,
         obj_in: UpdateSchemaType | dict,
         *,
-        session: AsyncSession | None = None,
+        session: AsyncSession,
         **extra_values,
     ) -> ModelType | None:
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
@@ -119,22 +122,10 @@ class PostgresRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType])
         await session.refresh(result)
         return result
 
-    #
-    # @manage_async_session
-    # async def create_or_update(
-    #     self,
-    #     obj_in: UpdateSchemaType | dict,
-    #     *args_filters,
-    #     session: AsyncSession | None = None,
-    #     **extra_values,
-    # ) -> ModelType | None:
-    #     if not (obj := await self.get_one(*args_filters, session=session)):
-    #         return await self.create(obj_in, session=session, **extra_values)
-    #
-    #     return await self.update(obj.id, obj_in, session=session)
 
-
-launches_repository = PostgresRepository(LaunchModel)
-launch_links_repository = PostgresRepository(LaunchLinksModel)
-missions_repository = PostgresRepository(MissionModel)
-rockets_repository = PostgresRepository(RocketModel)
+launches_repository: PostgresRepository[LaunchModel, LaunchSchema, LaunchSchema] = PostgresRepository(LaunchModel)
+launch_links_repository: PostgresRepository[LaunchLinksModel, LaunchLinksSchema, LaunchLinksSchema] = (
+    PostgresRepository(LaunchLinksModel)
+)
+missions_repository: PostgresRepository[MissionModel, MissionSchema, MissionSchema] = PostgresRepository(MissionModel)
+rockets_repository: PostgresRepository[RocketModel, RocketSchema, RocketSchema] = PostgresRepository(RocketModel)
