@@ -8,6 +8,9 @@ from sqlalchemy.orm.strategy_options import _AbstractLoad
 
 from app.db.base import manage_async_session
 from app.db.models.base import Base
+from app.db.models.launches import LaunchLinksModel, LaunchModel
+from app.db.models.missions import MissionModel
+from app.db.models.rockets import RocketModel
 
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -23,7 +26,11 @@ class PostgresRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType])
 
     @manage_async_session
     async def get(
-        self, session: AsyncSession, id_: UUID, *, extra_options: list[_AbstractLoad] | None = None
+        self,
+        id_: UUID,
+        *,
+        extra_options: list[_AbstractLoad] | None = None,
+        session: AsyncSession | None = None,
     ) -> ModelType | None:
         extra_options = extra_options or []
         statement = (
@@ -35,9 +42,9 @@ class PostgresRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType])
     @manage_async_session
     async def get_one(
         self,
-        session: AsyncSession,
         *args_filters,
         extra_options: list[_AbstractLoad] | None = None,
+        session: AsyncSession | None = None,
         **kwargs_filters,
     ) -> ModelType | None:
         extra_options = extra_options or []
@@ -52,11 +59,11 @@ class PostgresRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType])
     @manage_async_session
     async def get_multi(
         self,
-        session: AsyncSession,
         *args_filters,
         skip: int | None = None,
         limit: int | None = None,
         extra_options: list[_AbstractLoad] | None = None,
+        session: AsyncSession | None = None,
         **kwargs_filters,
     ) -> Sequence[ModelType]:
         filters = list(args_filters)
@@ -74,24 +81,26 @@ class PostgresRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType])
     @manage_async_session
     async def create(
         self,
-        session: AsyncSession,
         obj_in: CreateSchemaType,
+        *,
+        session: AsyncSession | None = None,
         **extra_values,
     ) -> ModelType:
+        data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
+        data |= extra_values
+
         result = await session.execute(
-            insert(self._model)
-            .values(**obj_in.model_dump(exclude_unset=True), **extra_values)
-            .returning(self._model)
-            .options(*self.one_object_options)
+            insert(self._model).values(**data).returning(self._model).options(*self.one_object_options)
         )
         return result.scalar_one()
 
     @manage_async_session
     async def update(
         self,
-        session: AsyncSession,
         id_: UUID,
         obj_in: UpdateSchemaType | dict,
+        *,
+        session: AsyncSession | None = None,
         **extra_values,
     ) -> ModelType | None:
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
@@ -109,3 +118,23 @@ class PostgresRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType])
 
         await session.refresh(result)
         return result
+
+    #
+    # @manage_async_session
+    # async def create_or_update(
+    #     self,
+    #     obj_in: UpdateSchemaType | dict,
+    #     *args_filters,
+    #     session: AsyncSession | None = None,
+    #     **extra_values,
+    # ) -> ModelType | None:
+    #     if not (obj := await self.get_one(*args_filters, session=session)):
+    #         return await self.create(obj_in, session=session, **extra_values)
+    #
+    #     return await self.update(obj.id, obj_in, session=session)
+
+
+launches_repository = PostgresRepository(LaunchModel)
+launch_links_repository = PostgresRepository(LaunchLinksModel)
+missions_repository = PostgresRepository(MissionModel)
+rockets_repository = PostgresRepository(RocketModel)

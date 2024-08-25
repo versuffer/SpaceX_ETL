@@ -12,13 +12,12 @@ class LaunchModel(Base):
     launch_id: Mapped[text] = mapped_column(nullable=False, unique=True)
 
     # one-to-one
-    launch_link: Mapped['LaunchLinkModel'] = relationship(back_populates='launch', uselist=False)
+    launch_links: Mapped['LaunchLinksModel'] = relationship(back_populates='launch', uselist=False)
 
 
-class LaunchLinkModel(Base):
+class LaunchLinksModel(Base):
     __tablename__ = 'launch_links'
 
-    mission_id: Mapped[text] = mapped_column(nullable=False, unique=True)
     article_link: Mapped[text] = mapped_column(nullable=True)
     flickr_images: Mapped[list[str]] = mapped_column(ARRAY(TEXT), default=[])
     presskit: Mapped[text] = mapped_column(nullable=True)

@@ -1,10 +1,12 @@
-from typing import Any, Literal
+from typing import Any, Literal, TypeAlias
 
 import backoff
 from httpx import AsyncClient, ConnectError, ConnectTimeout, ReadTimeout, Response
 from httpx._types import HeaderTypes, QueryParamTypes, URLTypes, VerifyTypes
 
 from app.settings.logs import logger
+
+JsonContent: TypeAlias = dict
 
 
 class AsyncRequestService:
@@ -15,7 +17,6 @@ class AsyncRequestService:
         params: QueryParamTypes | None = None,
         headers: HeaderTypes | None = None,
         verify: VerifyTypes | None = False,
-        trust_env: bool = False,
         **extra_client_kwargs,
     ) -> None:
         self._client_kwargs = dict(
@@ -23,7 +24,6 @@ class AsyncRequestService:
             params=params,
             headers=headers,
             verify=verify,
-            trust_env=trust_env,
             **extra_client_kwargs,
         )
 
@@ -35,7 +35,7 @@ class AsyncRequestService:
         params: QueryParamTypes | None = None,
         json: Any | None = None,
         **extra_kwargs,
-    ) -> Response:
+    ) -> JsonContent:
         @backoff.on_exception(
             backoff.expo,
             (ReadTimeout, ConnectTimeout, ConnectError),
@@ -49,7 +49,9 @@ class AsyncRequestService:
                 return await client.request(method, url, params=params, json=json, **extra_kwargs)
 
         try:
-            return await _request()
+            response = await _request()
+            response.raise_for_status()
+            return response.json()
         except (ReadTimeout, ConnectTimeout, ConnectError) as err:
             logger.exception(
                 f'Request {method=} {self._client_kwargs.get("base_url")=} '

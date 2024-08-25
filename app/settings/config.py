@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     POSTGRES_DSN: PostgresDsn | str = ''
 
     # Data Source
-    DATA_SOURCE_URL: str = 'https://spacex-production.up.railway.app/'
+    SPACEX_URL: str = 'https://spacex-production.up.railway.app/'
 
     model_config = SettingsConfigDict(env_file=BASEDIR / '.env')
 
