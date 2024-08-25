@@ -25,7 +25,7 @@ SpaceX ETL - сервис, собирающий данные о полётах, 
 ### Схема БД
 https://dbdiagram.io/d/SpaceX-ETL-DB-Schema-66ca2b3ea346f9518cfabbf4
 
-### Какие задачи решает сервис
+### Как работает сервис
 1) Раз в минуту собирает данные для объектов launch, mission и rocket;
 2) Сохраняет данные в PostgreSQL;
 3) При обращении по адресу http://localhost:8000/data_mart/object_url_count
