@@ -4,6 +4,7 @@ from typing import Callable, Coroutine
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from app.etl.tasks import ETLTasks
 from app.settings.logs import logger
 
 
@@ -20,7 +21,7 @@ class ETLScheduler:
                 task,
                 'cron',
                 name='ETL scheduler',
-                minute='*/5',
+                minute='*/1',
                 max_instances=1,
                 misfire_grace_time=1 * 60,
                 next_run_time=datetime.now(),
@@ -33,5 +34,5 @@ class ETLScheduler:
             pass
 
 
-# if __name__ == '__main__':
-#     ETLScheduler().run(task=task)
+if __name__ == '__main__':
+    ETLScheduler().run(task=ETLTasks().run_etl)
