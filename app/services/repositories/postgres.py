@@ -1,8 +1,8 @@
 from typing import Generic, Sequence, Type, TypeVar
 from uuid import UUID
 
-from pydantic import BaseModel
-from sqlalchemy import and_, insert, select, update
+from pydantic import BaseModel, TypeAdapter
+from sqlalchemy import and_, insert, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.strategy_options import _AbstractLoad
 
@@ -11,6 +11,7 @@ from app.db.models.base import Base
 from app.db.models.launches import LaunchLinksModel, LaunchModel
 from app.db.models.missions import MissionModel
 from app.db.models.rockets import RocketModel
+from app.schemas.api.v1.data_mart import ObjectUrlCountSchema
 from app.schemas.etl.launches import LaunchLinksSchema, LaunchSchema
 from app.schemas.etl.missions import MissionSchema
 from app.schemas.etl.rockets import RocketSchema
@@ -20,7 +21,7 @@ CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
-class PostgresRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
+class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     one_object_options: list[_AbstractLoad] = []
     multi_objects_options: list[_AbstractLoad] = []
 
@@ -123,9 +124,16 @@ class PostgresRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType])
         return result
 
 
-launches_repository: PostgresRepository[LaunchModel, LaunchSchema, LaunchSchema] = PostgresRepository(LaunchModel)
-launch_links_repository: PostgresRepository[LaunchLinksModel, LaunchLinksSchema, LaunchLinksSchema] = (
-    PostgresRepository(LaunchLinksModel)
+class DataMartRepository:
+    @manage_async_session
+    async def get_object_url_count(self, *, session: AsyncSession) -> ObjectUrlCountSchema:
+        data = await session.execute(text('SELECT object, url_count FROM object_url_count'))
+        return TypeAdapter(ObjectUrlCountSchema).validate_python({obj_type: count for obj_type, count in data})
+
+
+launches_repository: BaseRepository[LaunchModel, LaunchSchema, LaunchSchema] = BaseRepository(LaunchModel)
+launch_links_repository: BaseRepository[LaunchLinksModel, LaunchLinksSchema, LaunchLinksSchema] = BaseRepository(
+    LaunchLinksModel
 )
-missions_repository: PostgresRepository[MissionModel, MissionSchema, MissionSchema] = PostgresRepository(MissionModel)
-rockets_repository: PostgresRepository[RocketModel, RocketSchema, RocketSchema] = PostgresRepository(RocketModel)
+missions_repository: BaseRepository[MissionModel, MissionSchema, MissionSchema] = BaseRepository(MissionModel)
+rockets_repository: BaseRepository[RocketModel, RocketSchema, RocketSchema] = BaseRepository(RocketModel)
